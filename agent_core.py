@@ -113,10 +113,10 @@ def _fallback_json_tool_planner(user_prompt: str) -> dict | None:
             reg = r
             break
 
-    if any(k in p for k in ["chart", "plot", "graph", "visualize", "trend"]):
-        if "inventory" in p or "stock" in p or "threshold" in p:
+    if any(k in p for k in ["chart", "plot", "graph", "visualize", "trend", "图表", "趋势图", "柱状图", "折线图", "画图"]):
+        if any(k in p for k in ["inventory", "stock", "threshold", "库存"]):
             return {"function": "generate_analytics_chart", "arguments": {"chart_type": "inventory_health", "group_by": "category"}}
-        elif "trend" in p or "daily" in p:
+        elif any(k in p for k in ["trend", "daily", "趋势", "每日"]):
             args = {"chart_type": "sales_trend", "group_by": "date"}
             if start_d:
                 args["start_date"] = start_d
@@ -124,11 +124,11 @@ def _fallback_json_tool_planner(user_prompt: str) -> dict | None:
                 args["end_date"] = end_d
             return {"function": "generate_analytics_chart", "arguments": args}
         else:
-            gby = "region" if "region" in p else "category"
+            gby = "region" if ("region" in p or "地区" in p) else "category"
             return {"function": "generate_analytics_chart", "arguments": {"chart_type": "category_revenue", "group_by": gby}}
 
-    if any(k in p for k in ["stock", "inventory", "warehouse", "reorder", "shortage"]):
-        low_only = any(k in p for k in ["low", "running out", "shortage", "alert", "below"])
+    if any(k in p for k in ["stock", "inventory", "warehouse", "reorder", "shortage", "库存", "缺货", "补货"]):
+        low_only = any(k in p for k in ["low", "running out", "shortage", "alert", "below", "低库存", "不足", "缺货", "预警"])
         args = {"only_low_stock": low_only}
         if cat:
             args["category"] = cat
@@ -136,7 +136,7 @@ def _fallback_json_tool_planner(user_prompt: str) -> dict | None:
             args["region"] = reg
         return {"function": "check_inventory_status", "arguments": args}
 
-    if any(k in p for k in ["revenue", "gmv", "sales", "order", "refund", "q1 2025"]):
+    if any(k in p for k in ["revenue", "gmv", "sales", "order", "refund", "q1 2025", "销售额", "营收", "交易额", "订单", "退款"]):
         metric = "gmv_myr" if "gmv" in p else "net_revenue_myr"
         args = {"metric": metric}
         if start_d:
